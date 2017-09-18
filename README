@@ -1,0 +1,7 @@
+# usage:
+  script + path to saved segments
+
+
+#  precondition:
+ you need set download number (default:20)
+ in code: download_num=20
