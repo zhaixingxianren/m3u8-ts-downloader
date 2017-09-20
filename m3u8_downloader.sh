@@ -114,21 +114,21 @@ function download_ts()
         while read line
         do
 	    local saved_name=${line##*/}
-	    saved_name=${saved_name%%\?*}
-            echo "### downloading segment name:$saved_name"
-            $DOWNLOAD_TOOL $line -O $saved_name >/dev/null 2>&1
-            if [ $? -ne 0 ];then
-                echo downloading failed,retry again
-                $DOWNLOAD_TOOL $line -O $saved_name
-                let downloaded_num=downloaded_num+1
-            else
-                let downloaded_num=downloaded_num+1
-            fi
+	    saved_name=${saved_name%%\.ts*}
+	    echo "### downloading segment name:${saved_name}"
+	    $DOWNLOAD_TOOL $line -O ${saved_name}.ts > /dev/null 2>&1
+	    if [ $? -ne 0 ];then
+	        echo downloading failed,retry again
+	        $DOWNLOAD_TOOL $line -O $saved_name
+	        let downloaded_num=downloaded_num+1
+	    else
+	        let downloaded_num=downloaded_num+1
+	    fi
 
-            if [ $downloaded_num -eq $download_num ];then
-                echo "download enough,exit now.."
+	    if [ $downloaded_num -eq $download_num ];then
+	        echo "download enough,exit now.."
                 exit
-            fi
+	    fi
 
         done < $SEG_URLS_File
     fi
