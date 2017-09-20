@@ -12,6 +12,10 @@ if [ $# -ne 1 ]; then
 fi
 
 ret=0
+#set download number
+download_num=5
+downloaded_num=0
+
 
 echo "## goto $1"
 if [ ! -d "$1" ]; then
@@ -23,21 +27,16 @@ cd $1
 busybox uname -a > platform.info
 grep "arm" platform.info
 if [ $? -eq 0 ];then
-	echo 'arm platform'
-	DOWNLOAD_TOOL="busybox wget"
+    echo 'arm platform'
+    DOWNLOAD_TOOL="busybox wget"
 else
-	DOWNLOAD_TOOL=wget
+    DOWNLOAD_TOOL=wget
 fi
 
 
 #set download-url
-URL="http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8?wsSession=59283c4360e2eb717fc24660-150553275635213&wsIPSercert=d36ab94d82b4efba23f9b3f153525683&wsMonitor=-1"
-#URL=http://zdf1314-lh.akamaihd.net/i/de14_v1@392878/index_3096_av-p.m3u8?sd=10&dw=0&rebase=on
-
-#set download number
-download_num=20
-downloaded_num=0
-
+URL="http://vod.italkdd.com/hls/c/57c45f36000c03a3a92186036b7821cc.m3u8"
+#URL="http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8?wsSession=59283c4360e2eb717fc24660-150553275635213&wsIPSercert=d36ab94d82b4efba23f9b3f153525683&wsMonitor=-1"
 URLRelotive=0
 
 URL_ROOT=${URL%/*}
@@ -47,6 +46,7 @@ echo "root url is $URL_ROOT"
 MEDIASEQ=0
 TARGET_DURATION=0
 PreMEDIASEQ=-1
+STATIC_HLS=0
 
 #only print once
 function get_m3u8_info()
@@ -98,9 +98,9 @@ function get_segment_url()
 function download_ts()
 {
     grep "\.ts" $1 > $PLAYLIST_FILE
-	grep "^http.*\.ts" $1 
+    grep "^http.*\.ts" $1  >/dev/null 2>&1
     ret=$?
-	if [ $ret -ne 0 ];then
+    if [ $ret -ne 0 ];then
         URLRelotive=1
     else
         URLRelotive=0
@@ -113,8 +113,8 @@ function download_ts()
         get_segment_url $PLAYLIST_FILE
         while read line
         do
-			local saved_name=${line##*/}
-			saved_name=${saved_name%%\?*}
+	    local saved_name=${line##*/}
+	    saved_name=${saved_name%%\?*}
             echo "### downloading segment name:$saved_name"
             $DOWNLOAD_TOOL $line -O $saved_name >/dev/null 2>&1
             if [ $? -ne 0 ];then
@@ -124,6 +124,12 @@ function download_ts()
             else
                 let downloaded_num=downloaded_num+1
             fi
+
+            if [ $downloaded_num -eq $download_num ];then
+                echo "download enough,exit now.."
+                exit
+            fi
+
         done < $SEG_URLS_File
     fi
 }
@@ -131,24 +137,28 @@ function download_ts()
 i=0
 while [ $downloaded_num -lt $download_num ]
 do
-	saved_file="index_3096_av-p___${i}.m3u8"
+    saved_file="index_3096_av-p___${i}.m3u8"
     $DOWNLOAD_TOOL $URL -O $saved_file >/dev/null 2>&1
-	#if not sucessfull,will retry.
-	if [ $? -ne 0 ];then
+    #if not sucessfull,will retry.
+    if [ $? -ne 0 ];then
         echo download m3u8 failed,retry again...
         $DOWNLOAD_TOOL $URL -O $saved_file
         if [ $? -ne 0 ];then
             echo download m3u8 failed,exit...
             exit 1
         fi
-	fi
+    fi
+
+    grep "EXT-X-ENDLIST" $saved_file >/dev/null 2>&1
+    STATIC_HLS=$?
+    echo "hls is static"
 
     get_m3u8_info ${saved_file}
 
     #get media sequence
     get_media_seq ${saved_file}
 
-	#downloading ts segment.
+    #downloading ts segment.
     if [ $PreMEDIASEQ == $MEDIASEQ ];then
         echo "m3u8 downloaded is same sequence"
         download_ts ${saved_file} "SAME"
