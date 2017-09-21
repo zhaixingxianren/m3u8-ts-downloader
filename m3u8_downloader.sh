@@ -1,8 +1,10 @@
-################################################################################
-#	   free for study, forbidden for commercial use.
-#      author: lijinbo3000@163.com
-#      data:   2017
-################################################################################
+/********************************************************************************/
+*  you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+*  License as published by the Free Software Foundation; 
+*
+*  author: lijinbo3000@163.com
+*  date:   2017
+********************************************************************************/
 
 ###usage:
 if [ $# -ne 1 ]; then
