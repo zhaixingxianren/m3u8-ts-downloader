@@ -1,25 +1,23 @@
-##################################################################################
-#  you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; 
-#
-#  author: lijinbo3000@163.com
-#  date:   2017
-#################################################################################
+################################################################################
+#	   free for study, forbidden for commercial use.
+#      author: lijinbo3000@163.com
+#      data:   2017
+################################################################################
 
 ###usage:
-if [ $# -eq 0 ]; then
-	echo "usage: m3u8_downloader.sh [path] [download number]"
-	echo '   ex. m3u8_downloader.sh /mnt/usb/sda1/'
+if [ $# -ne 1 ]; then
+	echo "usage: shell-script + path-to-save"
+	echo '   ex. /downloadts.sh /mnt/usb/sda1/'
 	exit 1
 fi
 
 ret=0
 #set download number
-download_num=$2
+download_num=5
 downloaded_num=0
 
 
-echo "## goto $1, will download $2 number"
+echo "## goto $1"
 if [ ! -d "$1" ]; then
     mkdir "$1"
 fi
@@ -116,9 +114,9 @@ function download_ts()
         while read line
         do
 	    local saved_name=${line##*/}
-	    saved_name=${saved_name%%\.ts*}
-	    echo "### downloading segment name:${saved_name}"
-	    $DOWNLOAD_TOOL $line -O ${saved_name}.ts > /dev/null 2>&1
+	    saved_name=${saved_name%%\?*}
+	    echo "### downloading segment name:$saved_name"
+	    $DOWNLOAD_TOOL $line -O ${saved_name}  >/dev/null 2>&1
 	    if [ $? -ne 0 ];then
 	        echo downloading failed,retry again
 	        $DOWNLOAD_TOOL $line -O $saved_name
@@ -130,7 +128,7 @@ function download_ts()
 	    if [ $downloaded_num -eq $download_num ];then
 	        echo "download enough,exit now.."
                 exit
-	    fi
+            fi
 
         done < $SEG_URLS_File
     fi
@@ -139,7 +137,7 @@ function download_ts()
 i=0
 while [ $downloaded_num -lt $download_num ]
 do
-    saved_file="index_3096_av-p___${i}.m3u8"
+    local saved_file="index_3096_av-p___${i}.m3u8"
     $DOWNLOAD_TOOL $URL -O $saved_file >/dev/null 2>&1
     #if not sucessfull,will retry.
     if [ $? -ne 0 ];then

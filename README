@@ -1,7 +1,5 @@
 # usage:
-  script + path to saved segments
+ 	echo "usage: m3u8_downloader.sh [path] [download number]"
+	echo '   ex. m3u8_downloader.sh /mnt/usb/sda1/'
 
 
-#  precondition:
- you need set download number (default:20)
- in code: download_num=20
