@@ -37,8 +37,12 @@ fi
 
 
 #set download-url
-URL="http://vod.italkdd.com/hls/c/57c45f36000c03a3a92186036b7821cc.m3u8"
+#URL="https://d29r7idq0wxsiz.cloudfront.net/DigitalMusicDeliveryService/HPS.m3u8?m=b&dmid=227176503&c=cf&f=ts&t=10&b=256k&s=true&e2=1506076200000&v=V2&h=91fbb03d9ba568252f64ca3ec546e424746a2d64817825585888bdcf62d9c9c0"
 #URL="http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8?wsSession=59283c4360e2eb717fc24660-150553275635213&wsIPSercert=d36ab94d82b4efba23f9b3f153525683&wsMonitor=-1"
+#URL="http://live.italkdd.com:80/cds171/hls/TV013/media.m3u8"
+#URL="http://s11.tvprogram.cz/test/hd.m3u8"
+URL="https://s-remotesirona.svc.litv.tv/hi/vod/F4XR3jrl1HQ/litv-ftv11-video=1936000-audio_AACL_und_66800_545=66800.m3u8"
+URL="https://s-remotesirona.svc.litv.tv/hi/vod/buleR1g8MLg/litv-ftv11-video=1936000-audio_AACL_und_66800_545=66800.m3u8"
 URLRelotive=0
 
 URL_ROOT=${URL%/*}
@@ -121,7 +125,7 @@ function download_ts()
 	    $DOWNLOAD_TOOL $line -O ${saved_name}.ts > /dev/null 2>&1
 	    if [ $? -ne 0 ];then
 	        echo downloading failed,retry again
-	        $DOWNLOAD_TOOL $line -O $saved_name
+	        $DOWNLOAD_TOOL $line -O ${saved_name}.ts
 	        let downloaded_num=downloaded_num+1
 	    else
 	        let downloaded_num=downloaded_num+1
@@ -153,7 +157,7 @@ do
 
     grep "EXT-X-ENDLIST" $saved_file >/dev/null 2>&1
     STATIC_HLS=$?
-    echo "hls is static"
+    echo "hls is static $STATIC_HLS"
 
     get_m3u8_info ${saved_file}
 
